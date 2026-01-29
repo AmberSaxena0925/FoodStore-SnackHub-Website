@@ -10,7 +10,6 @@ export default function Footer() {
 
   return (
     <footer className="relative bg-gray-900 text-white overflow-hidden">
-      {/* WATERMARK */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         <span className="text-[140px] md:text-[180px] font-extrabold tracking-wider text-white/5 select-none">
           SnackHub
