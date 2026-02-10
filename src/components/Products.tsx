@@ -1,6 +1,7 @@
 import { ShoppingCart, Star } from 'lucide-react';
 import { useState } from 'react';
-import confetti from 'canvas-confetti'; 
+import { useCart } from '../context/CartContext';
+import confetti from 'canvas-confetti';
 
 interface Product {
   id: number;
@@ -27,12 +28,14 @@ const products: Product[] = [
   { id: 12, name: 'Party Mix', category: 'Combo', price: 150, weight: '400g', rating: 4.7, image: '🎉' },
 ];
 
-const categories = ['All', 'Spicy', 'Sweet', 'Traditional', 'Healthy', 'Combo'];
+const categories = ['All', 'Spicy', 'Sweet', 'Traditional', 'Healthy', 'Combo'] as const;
+type Category = typeof categories[number];
 
 export default function Products() {
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState<Category>('All');
+  const { addItem } = useCart();
 
-  // 🎉 CONFETTI FUNCTION
+  /* 🎉 Confetti Effect */
   const popSprinkles = () => {
     confetti({
       particleCount: 120,
@@ -45,7 +48,7 @@ export default function Products() {
   const filteredProducts =
     selectedCategory === 'All'
       ? products
-      : products.filter((p) => p.category === selectedCategory);
+      : products.filter(product => product.category === selectedCategory);
 
   return (
     <section id="products" className="py-20 bg-white">
@@ -63,15 +66,15 @@ export default function Products() {
 
         {/* CATEGORY FILTER */}
         <div className="flex flex-wrap justify-center gap-3 mb-12">
-          {categories.map((category) => (
+          {categories.map(category => (
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`px-6 py-2 rounded-full font-semibold transition-all ${
-                selectedCategory === category
+              className={`px-6 py-2 rounded-full font-semibold transition-all
+                ${selectedCategory === category
                   ? 'bg-orange-500 text-white shadow-lg scale-105'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}
+              `}
             >
               {category}
             </button>
@@ -80,7 +83,7 @@ export default function Products() {
 
         {/* PRODUCTS GRID */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProducts.map((product) => (
+          {filteredProducts.map(product => (
             <div
               key={product.id}
               className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 border"
@@ -94,7 +97,7 @@ export default function Products() {
                   <span className="text-xs font-semibold text-orange-500 bg-orange-50 px-3 py-1 rounded-full">
                     {product.category}
                   </span>
-                  <div className="flex items-center space-x-1">
+                  <div className="flex items-center gap-1">
                     <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                     <span className="text-sm font-semibold text-gray-700">
                       {product.rating}
@@ -105,13 +108,30 @@ export default function Products() {
                 <h3 className="text-lg font-bold text-gray-900 mb-1">
                   {product.name}
                 </h3>
-                <p className="text-sm text-gray-500 mb-3">{product.weight}</p>
+                <p className="text-sm text-gray-500 mb-3">
+                  {product.weight}
+                </p>
 
                 <div className="flex items-center justify-between">
                   <span className="text-2xl font-bold text-orange-500">
                     ₹{product.price}
                   </span>
-                  <button className="bg-orange-500 text-white p-2 rounded-full hover:bg-orange-600 transition-colors">
+
+                  <button
+                    onClick={() => {
+                      addItem({
+                        id: product.id,
+                        name: product.name,
+                        price: product.price,
+                        weight: product.weight,
+                        quantity: 1,
+                        image: product.image,
+                      });
+                      popSprinkles();
+                    }}
+                    className="bg-orange-500 text-white p-2 rounded-full
+                               hover:bg-orange-600 transition-all hover:scale-110"
+                  >
                     <ShoppingCart className="w-5 h-5" />
                   </button>
                 </div>
@@ -120,7 +140,7 @@ export default function Products() {
           ))}
         </div>
 
-        {/* 🎉 SPECIAL OFFER */}
+        {/* SPECIAL OFFER */}
         <div className="text-center mt-12">
           <div className="inline-block bg-orange-50 border-2 border-orange-200 rounded-2xl p-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-2">
@@ -130,7 +150,6 @@ export default function Products() {
               Get 20% off on orders above ₹500
             </p>
 
-            {/* 🎊 PARTY POP BUTTON */}
             <button
               onClick={popSprinkles}
               className="bg-orange-500 text-white px-6 py-2 rounded-full font-semibold
