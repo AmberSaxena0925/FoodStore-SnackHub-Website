@@ -1,4 +1,4 @@
-import { ShoppingCart, Star } from 'lucide-react';
+import { ShoppingCart, Star, Copy, Check } from 'lucide-react';
 import { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import confetti from 'canvas-confetti';
@@ -28,27 +28,44 @@ const products: Product[] = [
   { id: 12, name: 'Party Mix', category: 'Combo', price: 150, weight: '400g', rating: 4.7, image: '🎉' },
 ];
 
-const categories = ['All', 'Spicy', 'Sweet', 'Traditional', 'Healthy', 'Combo'] as const;
-type Category = typeof categories[number];
+const categories = ['All', 'Spicy', 'Sweet', 'Traditional', 'Healthy', 'Combo'];
 
 export default function Products() {
-  const [selectedCategory, setSelectedCategory] = useState<Category>('All');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [copied, setCopied] = useState(false);
   const { addItem } = useCart();
 
-  /* 🎉 Confetti Effect */
+  // 🎉 CONFETTI
   const popSprinkles = () => {
     confetti({
       particleCount: 120,
-      spread: 80,
+      spread: 90,
       origin: { y: 0.7 },
       colors: ['#fb923c', '#f97316', '#facc15', '#22c55e', '#ef4444'],
     });
+
+    setTimeout(() => {
+      confetti({
+        particleCount: 60,
+        spread: 120,
+        origin: { y: 0.6 },
+      });
+    }, 200);
+  };
+
+  // 📋 COPY COUPON
+  const copyCoupon = async () => {
+    await navigator.clipboard.writeText('SNACK20');
+    setCopied(true);
+    popSprinkles();
+
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const filteredProducts =
     selectedCategory === 'All'
       ? products
-      : products.filter(product => product.category === selectedCategory);
+      : products.filter((p) => p.category === selectedCategory);
 
   return (
     <section id="products" className="py-20 bg-white">
@@ -56,81 +73,68 @@ export default function Products() {
 
         {/* HEADER */}
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">
             Our Delicious <span className="text-orange-500">Products</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Explore our wide range of mouthwatering snacks, from crispy chips to sweet treats
+          <p className="text-xl text-gray-600">
+            Explore our wide range of mouthwatering snacks
           </p>
         </div>
 
         {/* CATEGORY FILTER */}
         <div className="flex flex-wrap justify-center gap-3 mb-12">
-          {categories.map(category => (
+          {categories.map((category) => (
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`px-6 py-2 rounded-full font-semibold transition-all
-                ${selectedCategory === category
+              className={`px-6 py-2 rounded-full font-semibold transition-all ${
+                selectedCategory === category
                   ? 'bg-orange-500 text-white shadow-lg scale-105'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}
-              `}
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
             >
               {category}
             </button>
           ))}
         </div>
 
-        {/* PRODUCTS GRID */}
+        {/* PRODUCTS */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProducts.map(product => (
-            <div
-              key={product.id}
-              className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 border"
-            >
+          {filteredProducts.map((product) => (
+            <div key={product.id} className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all hover:-translate-y-2 border">
               <div className="bg-gradient-to-br from-orange-100 to-yellow-100 h-48 flex items-center justify-center text-7xl">
                 {product.image}
               </div>
 
               <div className="p-5">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-orange-500 bg-orange-50 px-3 py-1 rounded-full">
+                <div className="flex justify-between mb-2">
+                  <span className="text-xs bg-orange-50 text-orange-500 px-3 py-1 rounded-full">
                     {product.category}
                   </span>
                   <div className="flex items-center gap-1">
                     <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm font-semibold text-gray-700">
-                      {product.rating}
-                    </span>
+                    <span className="text-sm">{product.rating}</span>
                   </div>
                 </div>
 
-                <h3 className="text-lg font-bold text-gray-900 mb-1">
-                  {product.name}
-                </h3>
-                <p className="text-sm text-gray-500 mb-3">
-                  {product.weight}
-                </p>
+                <h3 className="font-bold text-lg">{product.name}</h3>
+                <p className="text-sm text-gray-500 mb-3">{product.weight}</p>
 
-                <div className="flex items-center justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-2xl font-bold text-orange-500">
                     ₹{product.price}
                   </span>
 
                   <button
-                    onClick={() => {
-                      addItem({
-                        id: product.id,
-                        name: product.name,
-                        price: product.price,
-                        weight: product.weight,
-                        quantity: 1,
-                        image: product.image,
-                      });
-                      popSprinkles();
-                    }}
-                    className="bg-orange-500 text-white p-2 rounded-full
-                               hover:bg-orange-600 transition-all hover:scale-110"
+                    onClick={() => addItem({
+                      id: product.id,
+                      name: product.name,
+                      price: product.price,
+                      weight: product.weight,
+                      quantity: 1,
+                      image: product.image,
+                    })}
+                    className="bg-orange-500 text-white p-2 rounded-full hover:bg-orange-600 hover:scale-110 transition-all"
                   >
                     <ShoppingCart className="w-5 h-5" />
                   </button>
@@ -140,22 +144,18 @@ export default function Products() {
           ))}
         </div>
 
-        {/* SPECIAL OFFER */}
-        <div className="text-center mt-12">
+        {/* 🎁 SPECIAL OFFER */}
+        <div className="text-center mt-14">
           <div className="inline-block bg-orange-50 border-2 border-orange-200 rounded-2xl p-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">
-              Special Offer!
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Get 20% off on orders above ₹500
-            </p>
+            <h3 className="text-2xl font-bold mb-2">Special Offer 🎉</h3>
+            <p className="text-gray-600 mb-4">Get 20% off on orders above ₹500</p>
 
             <button
-              onClick={popSprinkles}
-              className="bg-orange-500 text-white px-6 py-2 rounded-full font-semibold
-                         hover:bg-orange-600 active:scale-95 transition-all shadow-lg"
+              onClick={copyCoupon}
+              className="flex items-center gap-2 mx-auto bg-orange-500 text-white px-6 py-2 rounded-full font-semibold hover:bg-orange-600 transition-all shadow-lg"
             >
-              🎉 Use Code: SNACK20
+              {copied ? <Check size={18} /> : <Copy size={18} />}
+              {copied ? 'Copied!' : 'Use Code: SNACK20'}
             </button>
           </div>
         </div>
